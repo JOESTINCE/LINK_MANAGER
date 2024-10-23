@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import TextField from '@mui/material/TextField';
-import { Snackbar, Button, Alert, CircularProgress } from '@mui/material';
+import { Snackbar, Alert, CircularProgress } from '@mui/material';
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from 'react-router-dom';
 import { LoadingButton } from '@mui/lab';

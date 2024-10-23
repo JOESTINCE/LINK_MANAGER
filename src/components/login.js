@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import TextField from '@mui/material/TextField';
-import { Snackbar, Button, Alert, CircularProgress } from '@mui/material';
+import { Snackbar, Alert, CircularProgress } from '@mui/material';
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import encryptDataService from '../services/encrypt-decrypt.service';
 import { useNavigate } from 'react-router-dom';
