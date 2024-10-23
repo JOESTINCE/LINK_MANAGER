@@ -1,7 +1,6 @@
 // src/firebase.js
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore'; // For Firestore
-import { getDatabase } from 'firebase/database';   // For Realtime Database
 
 // Firebase configuration object (replace with your own config)
 const firebaseConfig = {
@@ -13,6 +12,7 @@ const firebaseConfig = {
   appId: "1:1047022878505:web:ff01650fc87bfb2418c138",
   measurementId: "G-738ZP5V3MB"
 };
+
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);

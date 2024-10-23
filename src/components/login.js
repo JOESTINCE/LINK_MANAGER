@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import TextField from '@mui/material/TextField';
-import { Snackbar, Button, Alert } from '@mui/material';
+import { Snackbar, Button, Alert, CircularProgress } from '@mui/material';
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import encryptDataService from '../services/encrypt-decrypt.service';
 import { useNavigate } from 'react-router-dom';
+import { LoadingButton } from '@mui/lab';
 
 const Login = () => {
   const [login, setLogin] = useState({ emailId: '', password: '' });
   const [validationError, setValidationError] = useState({});
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
-
+  const [isLoader, setLoader] = useState(false)
   const auth = getAuth();
   const navigate = useNavigate();
 
@@ -41,15 +43,19 @@ const Login = () => {
     setValidationError(errors);
 
     if (Object.keys(errors).length === 0) {
+      setLoader(true)
       signInWithEmailAndPassword(auth, login.emailId, login.password)
         .then((userCredential) => {
           handleSnackbarOpen('Login Successful!', 'success');
           const user = userCredential.user;
-          localStorage.setItem('email', user.email);
-          navigate('/main');
+          localStorage.setItem('email', encryptDataService.encryptData(user.email));
+          navigate('/');
         })
         .catch((error) => {
-          handleSnackbarOpen('Login Failed! Please try again.', 'error');
+          setLoader(false)
+          const errorCode = error.code;
+          if (errorCode === 'auth/invalid-credential') handleSnackbarOpen('Invalid Login Credentials', 'error')
+          else handleSnackbarOpen(error.code, 'error');
         });
     }
   };
@@ -101,14 +107,22 @@ const Login = () => {
           error={Boolean(validationError.password)}
           helperText={validationError.password}
         />
-
-        <Button
+       
+        {/* <Button
           style={{ backgroundColor: 'black', color: 'white', border: '1px solid white' }}
           variant="outlined"
           onClick={onLogin}
-        >
-          Login
-        </Button>
+        > */}
+          <LoadingButton
+            style={{ backgroundColor: 'black', color: 'white', border: '1px solid white', minHeight:'40px', minWidth: '80px' }}
+            onClick={onLogin}
+            loading={isLoader}
+            variant="outlined"
+            loadingIndicator={<CircularProgress sx={{ color: 'white' }} size={24} />}
+            >
+          {!isLoader && 'Login'}
+          </LoadingButton>
+        {/* </Button> */}
 
         <span style={{ fontSize: '16px', marginBottom: '20px' }}>
           Don't have an account? <a href='/signup' style={{ textDecoration: 'underline', color: 'white' }}>Sign up</a>

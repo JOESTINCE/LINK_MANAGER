@@ -11,12 +11,14 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import { collection, addDoc, getDocs, query, where, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../services/firebase'; // Import Firestore instance
-
+import encryptDataService from '../services/encrypt-decrypt.service';
+import { useNavigate } from 'react-router-dom';
+import LogoutIcon from '@mui/icons-material/Logout';
+import Skeleton from '@mui/material/Skeleton';
+import Stack from '@mui/material/Stack';
 
 const Greeting = () => {
   const LinkCollection = collection(db, 'LinkCollection'); // Reference to 'users' collection
-  let isExistingData = false;
-  let dataCount;
   const customInputProperties = {
     '& .MuiOutlinedInput-root': {
       '& fieldset': {
@@ -41,6 +43,9 @@ const Greeting = () => {
     },
   }
   const [accordions, setAccordions] = useState([]);
+  const [isLoader, setLoader] = useState(false);
+  const navigate = useNavigate(); // Hook to navigate programmatically
+
   // Handler to update Accordion headers
   const handleAccordionHeaderChange = (index, event) => {
     const { value } = event.target;
@@ -100,39 +105,47 @@ const Greeting = () => {
       if (!querySnapshot.empty) {
         const userData = querySnapshot.docs[0].data(); // Assuming only one result
         setAccordions(userData?.links);
-        isExistingData = true
+        setLoader(false)
       } else {
+        setLoader(false)
         console.log("No user found with the provided email.");
         changeIsEdit('true');
       }
     } catch (error) {
+      setLoader(false)
       console.error("Error fetching user:", error);
     } 
   };
-
   useEffect(() => {
-    fetchUserByEmail(localStorage.getItem('email'));
+    if (localStorage.getItem('email')){
+      setLoader(true);
+      fetchUserByEmail(encryptDataService.decryptData(localStorage.getItem('email')));
+    }
+    else
+      navigate('/login');
+
+    // eslint-disable-next-line
   }, []);
 
 
   async function writeUserData() {
     try {
       console.log('console');
-      await addDoc(LinkCollection, { email: localStorage.getItem('email'), links: accordions });
+      await addDoc(LinkCollection, { email: encryptDataService.decryptData(localStorage.getItem('email')), links: accordions });
     } catch (err) {
       console.error('Error adding user:', err);
     }
   }
   const updateLink = async () => {
     try {
-      const email = localStorage.getItem('email');
+      const email = encryptDataService.decryptData(localStorage.getItem('email'));
       if (!email) {
         console.error("No email found in localStorage.");
         return;
       }
 
       // Query to find the user with the matching email
-      const q = query(LinkCollection, where("email", "==", localStorage.getItem('email')));
+      const q = query(LinkCollection, where("email", "==", encryptDataService.decryptData(localStorage.getItem('email'))));
       const querySnapshot = await getDocs(q);
 
       if (!querySnapshot.empty) {
@@ -145,11 +158,11 @@ const Greeting = () => {
         // Update the document with new values
         await updateDoc(linkRef, { links: accordions });
         console.log('Link updated successfully!');
-        fetchUserByEmail(localStorage.getItem('email'));
+        fetchUserByEmail(encryptDataService.decryptData(localStorage.getItem('email')));
       } else {
         console.log('No matching document found. Creating a new one...');
         writeUserData(); // Ensure this function is properly defined
-        fetchUserByEmail(localStorage.getItem('email'));
+        fetchUserByEmail(encryptDataService.decryptData(localStorage.getItem('email')));
       }
     } catch (error) {
       console.error("Error updating link:", error);
@@ -161,17 +174,39 @@ const Greeting = () => {
       {/* <Header headerMessage="Links"
             onIsEditChange={isEditChange} 
         dataCount={accordions.length}/> */}
-        <div>
-        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, width: '100vh', marginTop: '10px' }}>
+      {/* <div style={{ display: 'flex', alignItems: 'end', justifyContent: 'end', width: '100%'}}> */}
+        <LogoutIcon onClick = {()=>{navigate('/login');localStorage.clear()}}sx={{color: 'white', position: 'absolute', right:'15%', top: '9%', cursor:'pointer'}} />
+      {/* </div> */}
+      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, width: '100%', marginTop: '10px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, width: '100%', marginTop: '10px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
             <h1 style={{ color: 'white' }}>Links</h1>
           </div>
-          <div style={{ display: 'flex', alignItems: 'end', justifyContent: 'end', width: '99%' }}>
-            {accordions?.length ? <Button style={{ backgroundColor: 'rgb(0 0 255)', color: 'white', border: '1px solid rgba(255, 255, 255, 1)', borderColor: '#0140C1' }} variant="outlined" onClick={onButtonClick}>{isEdit==='true' ? 'Save' : 'Edit'}</Button> : <div></div>}
+          <div style={{ display: 'flex', alignItems: 'end', justifyContent: 'end', width: '85%' }}>
+            {accordions?.length ? <Button style={{ backgroundColor: 'rgb(0 0 255)', color: 'white', border: '1px solid white' }} variant="outlined" onClick={onButtonClick}>{isEdit==='true' ? 'Save' : 'Edit'}</Button> : <div></div>}
           </div>
         </div>
         </div>
       <div style={{ width: '70%', Height: '80%', display: 'flex', flexDirection: 'column', marginTop: '20px' }}>
+        {isLoader && (
+  <Stack spacing={-5}>
+    {Array.from({ length: 5 }).map((_, index) => (
+      <Skeleton
+        key={index}
+        variant="text"
+        sx={{
+          fontSize: '6rem',
+          borderTopRightRadius: '15px',
+          borderTopLeftRadius: '15px',
+          backgroundColor: 'rgb(38 38 38)', // Or use theme.palette.grey[800]
+          '&::after': {
+            background: 'linear - gradient(90deg, rgba(100 149 237 0.3), rgba(255 255 255 0.4), rgba(100 149 237 0.3))'
+          },
+        }}
+      />
+    ))}
+  </Stack>
+)}
         {accordions.map((accordion, accordionIndex) => (
           <Accordion key={accordionIndex} style={{ marginBottom: '10px', backgroundColor: '#CCD0D8', boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)', borderRadius: '15px'}} >
             <AccordionSummary style={{ backgroundColor: 'rgb(0 0 255)', color: 'white', border: '1px solid rgba(255, 255, 255, 1)', boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)', borderTopRightRadius: '15px', borderTopLeftRadius: '15px', }} 
