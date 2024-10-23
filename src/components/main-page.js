@@ -79,12 +79,12 @@ const Greeting = () => {
   const [accordions, setAccordions] = useState([]);
   const [isLoader, setLoader] = useState(false);
   const navigate = useNavigate(); // Hook to navigate programmatically
-  const [color, setColor] = useState('#fff');
+  // const [color, setColor] = useState('#fff');
   const [displayPicker, setDisplayPicker] = useState();
-  const handleColorChange = (newColor) => {
-    setColor(newColor.hex);
-    console.log('newColor')
-  };
+  // const handleColorChange = (newColor) => {
+  //   setColor(newColor.hex);
+  //   console.log('newColor')
+  // };
   // Handler to update Accordion headers
   const handleAccordionHeaderChange = (index, event) => {
     const { value } = event.target;
@@ -265,7 +265,7 @@ const Greeting = () => {
                 </div>
               ))}
             </div>}
-          <div style={{ display: 'flex', flexDirection: 'row', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ display: 'flex', flexDirection: 'row', width: '100%', alignItems: 'center', justifyContent: 'center' }}>
             {/* {displayPicker === accordionIndex && (
               <Box
                 sx={{
