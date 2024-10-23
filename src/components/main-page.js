@@ -16,8 +16,42 @@ import { useNavigate } from 'react-router-dom';
 import LogoutIcon from '@mui/icons-material/Logout';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
+import FormatColorFillIcon from '@mui/icons-material/FormatColorFill';
 
 const Greeting = () => {
+  const colors = [
+    {
+      color:'red'
+    },
+    {
+      color: 'blue'
+    },
+    {
+      color: 'yellow'
+    },
+    {
+      color: 'green'
+    },
+    {
+      color: 'orange'
+    },
+    {
+      color: 'grey'
+    },
+    {
+      color: 'violet'
+    },
+    {
+      color: 'indigo'
+    },
+    {
+      color: 'red'
+    },
+    {
+      color: 'red'
+    },
+
+  ]
   const LinkCollection = collection(db, 'LinkCollection'); // Reference to 'users' collection
   const customInputProperties = {
     '& .MuiOutlinedInput-root': {
@@ -26,7 +60,7 @@ const Greeting = () => {
       },
       input: {
         color: 'white', // Input text color
-        backgroundColor: 'rgb(51 51 255)'
+        backgroundColor: 'rgb(213 213 213 / 20%)'
       },
       '&:hover fieldset': {
         borderColor: 'blue', // Hover color
@@ -45,7 +79,12 @@ const Greeting = () => {
   const [accordions, setAccordions] = useState([]);
   const [isLoader, setLoader] = useState(false);
   const navigate = useNavigate(); // Hook to navigate programmatically
-
+  const [color, setColor] = useState('#fff');
+  const [displayPicker, setDisplayPicker] = useState();
+  const handleColorChange = (newColor) => {
+    setColor(newColor.hex);
+    console.log('newColor')
+  };
   // Handler to update Accordion headers
   const handleAccordionHeaderChange = (index, event) => {
     const { value } = event.target;
@@ -63,7 +102,7 @@ const Greeting = () => {
 
   // Handler to add new Accordion
   const handleAddAccordion = () => {
-    setAccordions([...accordions, { header: '', content: [{ name: '', link: '' }] }]);
+    setAccordions([...accordions, { header: '', content: [{ name: '', link: '' }], headerBackGroundColor:'rgb(0, 0, 255)' }]);
   };
 
   // Handler to remove an Accordion
@@ -95,6 +134,7 @@ const Greeting = () => {
     else{
       updateLink();
       changeIsEdit('false');
+      setDisplayPicker()
     }
   }
   const fetchUserByEmail = async (email) => {
@@ -168,6 +208,16 @@ const Greeting = () => {
       console.error("Error updating link:", error);
     }
   };
+  function onColorPickerIconClick(index) {
+    setDisplayPicker(displayPicker === index ? null : index);
+  }
+  function onColorPickerClick(selectedColor, index) {
+    const updatedAccordions = accordions.map((acc, i) =>
+      i === index ? { ...acc, headerBackGroundColor: selectedColor } : acc
+    );
+    setAccordions(updatedAccordions);
+  }
+
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection:'column', width: '100%' }}>
@@ -175,14 +225,14 @@ const Greeting = () => {
             onIsEditChange={isEditChange} 
         dataCount={accordions.length}/> */}
       {/* <div style={{ display: 'flex', alignItems: 'end', justifyContent: 'end', width: '100%'}}> */}
-        <LogoutIcon onClick = {()=>{navigate('/login');localStorage.clear()}}sx={{color: 'white', position: 'absolute', right:'15%', top: '9%', cursor:'pointer'}} />
+        <LogoutIcon onClick = {()=>{navigate('/login');localStorage.clear()}}sx={{color: 'white', position: 'absolute', right: isEdit==='true' ? '15%' : '17%', top: '9%', cursor:'pointer'}} />
       {/* </div> */}
       <div style={{ display: 'flex', flexDirection: 'column', flex: 1, width: '100%', marginTop: '10px' }}>
         <div style={{ display: 'flex', flexDirection: 'column', flex: 1, width: '100%', marginTop: '10px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
             <h1 style={{ color: 'white' }}>Links</h1>
           </div>
-          <div style={{ display: 'flex', alignItems: 'end', justifyContent: 'end', width: '85%' }}>
+          <div style={{ display: 'flex', alignItems: 'end', justifyContent: 'end', width: isEdit==='true'? '85%':'83%' }}>
             {accordions?.length ? <Button style={{ backgroundColor: 'rgb(0 0 255)', color: 'white', border: '1px solid white' }} variant="outlined" onClick={onButtonClick}>{isEdit==='true' ? 'Save' : 'Edit'}</Button> : <div></div>}
           </div>
         </div>
@@ -200,7 +250,7 @@ const Greeting = () => {
           borderTopLeftRadius: '15px',
           backgroundColor: 'rgb(38 38 38)', // Or use theme.palette.grey[800]
           '&::after': {
-            background: 'linear - gradient(90deg, rgba(100 149 237 0.3), rgba(255 255 255 0.4), rgba(100 149 237 0.3))'
+            backgroundImage: 'linear - gradient(90deg, rgba(100 149 237 0.3), rgba(255 255 255 0.4), rgba(100 149 237 0.3))'
           },
         }}
       />
@@ -208,8 +258,44 @@ const Greeting = () => {
   </Stack>
 )}
         {accordions.map((accordion, accordionIndex) => (
-          <Accordion key={accordionIndex} style={{ marginBottom: '10px', backgroundColor: '#CCD0D8', boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)', borderRadius: '15px'}} >
-            <AccordionSummary style={{ backgroundColor: 'rgb(0 0 255)', color: 'white', border: '1px solid rgba(255, 255, 255, 1)', boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)', borderTopRightRadius: '15px', borderTopLeftRadius: '15px', }} 
+          <div style={{display:'flex', alignItems:'start', justifyContent:'start', flexDirection:'column', width:'100%', gap:'10px'}}>
+            {displayPicker === accordionIndex && <div style={{border:'1px solid white', padding: '10px', display: 'flex', alignItems: 'center', flexDirection: 'row', height: '30px', width: '47%', backgroundColor:'#121212', marginLeft: '5%', borderRadius:'5px', gap:'10px'}}>
+              {colors.map((colorItem, index) => (
+                <div onClick={() => { onColorPickerClick(colorItem.color, accordionIndex) }} style={{ width: '25px', height: '25px', backgroundColor: colorItem.color, border: ((colorItem.color === accordion.headerBackGroundColor) || (!accordion.headerBackGroundColor && colorItem.color === 'blue')) ? '3px solid white' : '1px solid white', borderRadius:'20%', cursor:'pointer'}}>
+                </div>
+              ))}
+            </div>}
+          <div style={{ display: 'flex', flexDirection: 'row', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {/* {displayPicker === accordionIndex && (
+              <Box
+                sx={{
+                  left: '10%',
+                  top: '10%',
+                  width:'20%',
+                  zIndex: 10
+                }}
+              >
+                <SketchPicker
+                  color={color}
+                  onChangeComplete={handleColorChange}
+                />
+              </Box>
+            )}*/}
+            {isEdit === 'true' && <FormatColorFillIcon
+              onClick={() => onColorPickerIconClick(accordionIndex)}
+              sx={{ color: 'white', cursor: 'pointer', width: '5%', }}
+            />} 
+            {/* {displayPicker && displayPicker === accordionIndex && (
+              <SketchPicker 
+              color={color} 
+              sx={{ backgroundColor: 'black' }} 
+              onChangeComplete={handleColorChange} />
+            )}
+            {isEdit === 'true' && <FormatColorFillIcon 
+            onClick={onColorPickerIconClick(accordionIndex)} 
+            sx={{ color: 'white', width: '5%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} />} */}
+          <Accordion key={accordionIndex} style={{ marginBottom: '10px', backgroundColor: '#CCD0D8', boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)', borderRadius: '15px', width:'95%'}} >
+                <AccordionSummary style={{ backgroundColor: accordion.headerBackGroundColor ?? 'rgb(0, 0, 255)', color: 'white', border: '1px solid rgba(255, 255, 255, 1)', boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)', borderTopRightRadius: '15px', borderTopLeftRadius: '15px', }} 
               expandIcon={<ExpandMoreIcon sx={{ color: 'white' }} />}
               aria-controls={`panel${accordionIndex}-content`}
               id={`panel${accordionIndex}-header`}
@@ -268,7 +354,7 @@ const Greeting = () => {
                         variant="outlined"
                         fullWidth
                       />
-                    ) : (<Button style={{ backgroundColor: 'rgb(0 0 255)', color: 'white', border: '1px solid rgba(255, 255, 255, 1)' }}variant="contained" onClick={() => { window.open(contentItem.link, "_blank")} }>Navigate </Button>
+                    ) : (<Button style={{ backgroundColor: accordion.headerBackGroundColor ?? 'rgb(0, 0, 255)', color: 'white', border: '1px solid rgba(255, 255, 255, 1)' }}variant="contained" onClick={() => { window.open(contentItem.link, "_blank")} }>Navigate </Button>
                     )}
                   </div>
                   {isEdit === 'true' ? (<IconButton
@@ -288,11 +374,33 @@ const Greeting = () => {
               </div>
             </AccordionDetails>
           </Accordion>
+          </div>
+          </div>
         ))}
         <div style={{ display: 'flex', justifyContent: 'end', paddingTop: '10px' }}>
           {isEdit === 'true' ? 
             (<AddIcon onClick={handleAddAccordion} sx={{ color: 'white' }} style={{ cursor: 'pointer' }} />) :
           (<div></div>)}
+          {/* <Box sx={{ textAlign: 'center', marginTop: 5 }}>
+            {/* <Button
+              variant="contained"
+              onClick={() => setDisplayPicker(!displayPicker)}
+              sx={{ backgroundColor: color, color: '#000', marginBottom: 2 }}
+            >
+              Pick Color
+            </Button> */}
+
+
+            {/* <Box
+              sx={{
+                marginTop: 2,
+                width: 100,
+                height: 100,
+                backgroundColor: color,
+                border: '1px solid black',
+              }}
+            /> 
+          </Box> */}
         </div>
       </div>
     </div>
